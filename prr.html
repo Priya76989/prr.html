@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cat Breed Info Explorer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #decaca;
+        }
+        button {
+            margin: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        #output {
+            margin-top: 20px;
+            border: 1px solid #13111e;
+            padding: 10px;
+            min-height: 100px;
+            background-color: #b69898;
+        }
+        .loading {
+            color: #888;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to the Cat Breed Info Explorer!</h1>
+
+    <button onclick="displayAllBreedNames()">Show All Cat Names</button>
+    
+    <label for="health-issue">Search by Health Issue:</label>
+    <input type="number" id="health-issue" placeholder="Enter issue number (1-5)">
+    <button onclick="filterBreedsByHealthIssue()">Find Breeds</button>
+    
+    <div>
+        <input type="radio" id="imperial" name="weightUnit" value="imperial" checked>
+        <label for="imperial">Imperial (lbs)</label>
+        <input type="radio" id="metric" name="weightUnit" value="metric">
+        <label for="metric">Metric (kg)</label>
+        <button onclick="displayBreedWeights()">Show Weights</button>
+    </div>
+
+    <button onclick="displayIntelligenceAndFriendliness()">Intelligence & Friendliness</button>
+    <button onclick="calculateAverageIntelligence()">Calculate Average Intelligence</button>
+    <button onclick="calculateAverageIntelligenceForChildFriendly()">Child-Friendly Intelligence</button>
+
+    <div id="output"></div>
+
+    <script>
+        const apiEndpoint = "https://api.thecatapi.com/v1/breeds";
+        const outputElement = document.getElementById("output");
+        let catBreeds = [];
+
+        window.onload = function() {
+            fetchCatData();
+        };
+
+        function fetchCatData() {
+            outputElement.innerHTML = '<p class="loading">Loading cat data... Please wait!</p>';
+            fetch(apiEndpoint)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch data');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    catBreeds = data;
+                    outputElement.innerHTML = '<p>Data loaded! Click the buttons to explore.</p>';
+                })
+                .catch(error => {
+                    console.error('Error fetching cat data:', error);
+                    outputElement.innerHTML = '<p>Oops! Something went wrong. Please try again later.</p>';
+                });
+        }
+
+        function displayAllBreedNames() {
+            const names = catBreeds.map(breed => breed.name).join('<br>');
+            outputElement.innerHTML = names || 'No cat breeds found.';
+        }
+
+        function filterBreedsByHealthIssue() {
+            const issueNumber = Number(document.getElementById("health-issue").value);
+            const filteredBreeds = catBreeds.filter(breed => breed.health_issues === issueNumber);
+            outputElement.innerHTML = filteredBreeds.length > 0 ? 
+
+
+
+            filteredBreeds.map(breed => `${breed.name} (Health Issues: ${breed.health_issues})`).join('<br>') : 
+            'No breeds found with that health issue number. Try something else!';
+        }
+ 
+        function displayBreedWeights() {
+            const selectedUnit = document.querySelector('input[name="weightUnit"]:checked').value;
+        
+            let weightsDisplay;
+            if (selectedUnit === 'imperial') {
+                weightsDisplay = 'Here are the imperial weights of the cat breeds:<br>';
+            } else {
+                weightsDisplay = 'Here are the metric weights of the cat breeds:<br>';
+            }
+        
+            if (catBreeds && catBreeds.length > 0) {
+
+                for (let i = 0; i < catBreeds.length; i++) {
+                    let weight;
+                    if (selectedUnit === 'imperial') {
+                        weight = catBreeds[i].weight.imperial;
+                    } else {
+                        weight = catBreeds[i].weight.metric;
+                    }
+                    weightsDisplay += `${catBreeds[i].name}: ${weight}<br>`;
+                }
+
+                outputElement.innerHTML = weightsDisplay;
+            } else {
+                
+                outputElement.innerHTML = 'Oops! No weight data available for these fluffy friends.';
+            }
+        }
+        
+        
+
+         
+        function displayIntelligenceAndFriendliness() {
+            let catInfo = [];
+            for (let i = 0; i < catBreeds.length; i++) {
+                let cat = catBreeds[i];
+                
+                let catDescription = `${cat.name} - `;
+                catDescription += `Smart-o-meter: ${cat.intelligence}, `;
+                catDescription += `Kid-Friendly Rating: ${cat.child_friendly}`;
+                
+                catInfo.push(catDescription);
+            }
+            
+            if (catInfo.length > 0) {
+                outputElement.innerHTML = catInfo.join('<br>');
+            } else {
+
+                outputElement.innerHTML = "Oops! Our cats are being secretive today. No intelligence or friendliness data available!";
+            }
+        }
+
+        function calculateAverageIntelligence() {
+            let totalSmarts = 0;
+            for (let i = 0; i < catBreeds.length; i++) {
+                totalSmarts += catBreeds[i].intelligence;
+            }
+            let numberOfBreeds = catBreeds.length;
+            let averageSmarts = totalSmarts / numberOfBreeds;
+    
+            averageSmarts = averageSmarts.toFixed(2);
+            outputElement.innerHTML = `The average intelligence is ${averageSmarts}`;;
+        }
+        
+
+        function calculateAverageIntelligenceForChildFriendly() {
+                let kidFriendlyCats = [];
+                for (let i = 0; i < catBreeds.length; i++) {
+                    if (catBreeds[i].child_friendly >= 4) {
+                        kidFriendlyCats.push(catBreeds[i]);
+                    }
+                }
+                let totalSmarts = 0;
+                for (let i = 0; i < kidFriendlyCats.length; i++) {
+                    totalSmarts += kidFriendlyCats[i].intelligence;
+                }
+                let numberOfKidFriendlyCats = kidFriendlyCats.length;
+                let averageSmarts = 0;
+                if (numberOfKidFriendlyCats > 0) {
+                    averageSmarts = (totalSmarts / numberOfKidFriendlyCats).toFixed(2);
+                    outputElement.innerHTML = `The average IQ of our kid-friendly cats is ${averageSmarts}`;
+                } else {
+                    outputElement.innerHTML = "Oops! We couldn't find any super kid-friendly cats. They must be hiding!";
+                }
+            }
+            
+    </script>
+</body>
+</html>
